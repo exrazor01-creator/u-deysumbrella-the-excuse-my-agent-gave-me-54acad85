@@ -105,6 +105,14 @@ def main():
     os.makedirs("/output", exist_ok=True)
     with open("/output/entry.txt", "w", encoding="utf-8") as handle:
         handle.write(entry)
+    # The sealed scorer reads the file, not this process's memory:
+    # prove the bytes on disk are exactly the validated entry before
+    # reporting success, so a short write or an encoding slip can
+    # never pass silently.
+    with open("/output/entry.txt", encoding="utf-8") as handle:
+        written = handle.read()
+    if written != entry:
+        raise ValueError("written entry does not match the validated entry")
     print(entry)
 
 
